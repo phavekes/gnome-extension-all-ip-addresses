@@ -152,7 +152,7 @@ function init() {
 
 function enable() {
     log('All IP Addresses extension enabled');
-    _indicator = new LanIpAddressIndicator();
+    _indicator = new AllIpAddressesIndicator();
 	Main.panel.addToStatusArea('all-ip-addresses-indicator', _indicator);
     _indicator.connect('button-press-event', _toggle);
 }
