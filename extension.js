@@ -147,20 +147,18 @@ const AllIpAddressesIndicator = new Lang.Class({
 let _indicator;
 
 function init() {
-    log('All IP Addresses extension initialized');
 }
 
 function enable() {
-    log('All IP Addresses extension enabled');
     _indicator = new AllIpAddressesIndicator();
 	Main.panel.addToStatusArea('all-ip-addresses-indicator', _indicator);
     _indicator.connect('button-press-event', _toggle);
 }
 
 function disable() {
-    log('All IP Addresses extension disabled');
     _indicator.stop();
     _indicator.destroy();
+    _indicator = null;
 }
 
 function _toggle() {
