@@ -1,15 +1,38 @@
+'use strict';
+
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 
 const St = imports.gi.St;
-const Lang = imports.lang;
 const PanelMenu = imports.ui.panelMenu;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const ShellToolkit = imports.gi.St;
+const GObject = imports.gi.GObject;
 
-// Start with IPv4 LAN address as default
-var type=4;
+// Start with TUN0 address as default
+var type=1;
+
+function _get_tun0() {
+    // Run ifconfig and pull the ip address for tun0
+    var command_output_bytes = GLib.spawn_command_line_sync("ifconfig tun0")[1];
+    var command_output_string = '';
+
+    for (var i = 0; i < command_output_bytes.length; ++i){
+        var current_character = String.fromCharCode(command_output_bytes[i]);
+        command_output_string += current_character;
+    }
+
+    var Re = new RegExp(/inet [^ ]+/g);
+    var matches = command_output_string.match(Re);
+    var tun0IpAddress;
+    if (matches) {
+        tun0IpAddress = matches[0].split(' ')[1];
+    } else {
+        tun0IpAddress = '';
+    }
+    return tun0IpAddress;
+}
 
 function _get_lan_ip4() {
     // Ask the IP stack what route would be used to reach 1.1.1.1 (Cloudflare DNS)
@@ -96,45 +119,48 @@ function _get_wan_ip4() {
     return wanIpAddress;
 }
 
-const AllIpAddressesIndicator = new Lang.Class({
-    Name: 'AllIpAddresses.indicator',
-    Extends: PanelMenu.Button,
 
-    _init: function () {
-        this.parent(0.0, "All IP Addresses Indicator", false);
+var AllIPAddressIndicator = class AllIPAddressIndicator extends PanelMenu.Button{
+
+    _init() {
+        // Chaining up to the super-class
+        super._init(0.0, "All IP Addresses Indicator", false);
+
         this.buttonText = new St.Label({
             text: 'Loading...',
             y_align: Clutter.ActorAlign.CENTER
         });
         this.add_child(this.buttonText);
         this._updateLabel();
-    },
+    }
 
-    _updateLabel : function(){
+    _updateLabel(){
         const refreshTime = 10 // in seconds
 
         if (this._timeout) {
                 Mainloop.source_remove(this._timeout);
                 this._timeout = null;
         }
-        this._timeout = Mainloop.timeout_add_seconds(refreshTime, Lang.bind(this, this._updateLabel));
+        this._timeout = Mainloop.timeout_add_seconds(refreshTime, () => {this._updateLabel();});
         // Show the right format. 0 = WAN, 4 = IPv4, 6=IPv6
         if (type===4) {
             this.buttonText.set_text("LAN: "+_get_lan_ip4());
         } else if (type===0) {
             this.buttonText.set_text("WAN: "+_get_wan_ip4());
-        } else {
+        } else if (type===6){
             this.buttonText.set_text("IP6: "+_get_lan_ip6());
+        } else {
+            this.buttonText.set_text("VPN: "+_get_tun0());
         }
-    },
+    }
 
-    _removeTimeout: function () {
+    _removeTimeout() {
         if (this._timeout) {
             this._timeout = null;
         }
-    },
+    }
 
-    stop: function () {
+    stop() {
         if (this._timeout) {
             Mainloop.source_remove(this._timeout);
         }
@@ -142,7 +168,14 @@ const AllIpAddressesIndicator = new Lang.Class({
 
         this.menu.removeAll();
     }
-});
+}
+// In gnome-shell >= 3.32 this class and several others became GObject
+// subclasses. We can account for this change simply by re-wrapping our
+// subclass in `GObject.registerClass()`
+AllIPAddressIndicator = GObject.registerClass(
+    {GTypeName: 'AllIPAddressIndicator'},
+    AllIPAddressIndicator
+);
 
 let _indicator;
 
@@ -150,9 +183,9 @@ function init() {
 }
 
 function enable() {
-    _indicator = new AllIpAddressesIndicator();
-	Main.panel.addToStatusArea('all-ip-addresses-indicator', _indicator);
-    _indicator.connect('button-press-event', _toggle);
+    _indicator = new AllIPAddressIndicator();
+    Main.panel.addToStatusArea('all-ip-addresses-indicator', _indicator);
+    _indicator.connectObject('button-press-event', _toggle);
 }
 
 function disable() {
@@ -166,8 +199,10 @@ function _toggle() {
         type=6;
     } else if (type===6) {
         type=0;
+    } else if (type===0){
+        type=1;
     } else {
-        type=4;
+        type=4
     }
     _indicator._updateLabel();
 }
