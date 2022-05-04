@@ -185,7 +185,7 @@ function init() {
 function enable() {
     _indicator = new AllIPAddressIndicator();
     Main.panel.addToStatusArea('all-ip-addresses-indicator', _indicator);
-    _indicator.connectObject('button-press-event', _toggle);
+    _indicator.connect('button-press-event', _toggle);
 }
 
 function disable() {
