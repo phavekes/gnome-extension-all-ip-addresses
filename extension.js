@@ -10,8 +10,8 @@ const GLib = imports.gi.GLib;
 const ShellToolkit = imports.gi.St;
 const GObject = imports.gi.GObject;
 
-// Start with TUN0 address as default
-var type=1;
+// Start with WAN address as default
+var type=4;
 
 function _get_tun0() {
     // Run ifconfig and pull the ip address for tun0
@@ -185,7 +185,7 @@ function init() {
 function enable() {
     _indicator = new AllIPAddressIndicator();
     Main.panel.addToStatusArea('all-ip-addresses-indicator', _indicator);
-    _indicator.connectObject('button-press-event', _toggle);
+    _indicator.connect('button-press-event', _toggle);
 }
 
 function disable() {

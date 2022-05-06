@@ -4,7 +4,7 @@ This is the code behind the GNOME Shell Extension called **ALL IP Addresses**, a
 
 ## Introduction
 
-This extention is based upon the lan-ip-address extention. I added the switch between LAN, WAN and IPv6.
+This extention is based upon the lan-ip-address extention. I added the switch between LAN, WAN and IPv6 and VPN.
 This extention will only show the IP-addresses your workstation will use to communicate to the internet (IPv4 and IPv6) or your LAN. Virtual host-only interfaces (like e.g. Docker or VirtualBox interfaces) will not show.
 
 ## How it works
