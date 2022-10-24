@@ -119,6 +119,20 @@ function _get_wan_ip4() {
     return wanIpAddress;
 }
 
+function _get_reverse(address) {
+    // Use the dig command to find the reverse for the given ip-address
+    var command_output_bytes = GLib.spawn_command_line_sync('dig -x '+address+" +short")[1];
+    var command_output_string = '';
+
+    for (var current_character_index = 0;
+        current_character_index < command_output_bytes.length;
+        ++current_character_index)
+    {
+        var current_character = String.fromCharCode(command_output_bytes[current_character_index]);
+        command_output_string += current_character;
+    }
+    return command_output_string;
+}
 
 var AllIPAddressIndicator = class AllIPAddressIndicator extends PanelMenu.Button{
 
@@ -149,6 +163,10 @@ var AllIPAddressIndicator = class AllIPAddressIndicator extends PanelMenu.Button
             this.buttonText.set_text("WAN: "+_get_wan_ip4());
         } else if (type===6){
             this.buttonText.set_text("IP6: "+_get_lan_ip6());
+        } else if (type===94){
+            this.buttonText.set_text("Reverse (ipv4) : "+_get_reverse(_get_wan_ip4()));
+        } else if (type===96){
+            this.buttonText.set_text("Reverse (ipv6) : "+_get_reverse(_get_lan_ip6()));
         } else {
             this.buttonText.set_text("VPN: "+_get_tun0());
         }
@@ -201,6 +219,10 @@ function _toggle() {
         type=0;
     } else if (type===0){
         type=1;
+    } else if (type===1){
+        type=94;
+    } else if (type===94){
+        type=96;
     } else {
         type=4
     }
