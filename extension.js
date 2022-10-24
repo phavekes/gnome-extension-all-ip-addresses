@@ -149,7 +149,7 @@ var AllIPAddressIndicator = class AllIPAddressIndicator extends PanelMenu.Button
     }
 
     _updateLabel(){
-        const refreshTime = 10 // in seconds
+        const refreshTime = 20 // in seconds
 
         if (this._timeout) {
                 Mainloop.source_remove(this._timeout);
