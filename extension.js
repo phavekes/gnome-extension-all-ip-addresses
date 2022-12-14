@@ -14,8 +14,8 @@ const GObject = imports.gi.GObject;
 var type=4;
 
 function _get_tun0() {
-    // Run ifconfig and pull the ip address for tun0
-    var command_output_bytes = GLib.spawn_command_line_sync("ifconfig tun0")[1];
+    // Run ifconfig and pull the ip address for tun0 or vpn0
+    var command_output_bytes = GLib.spawn_command_line_sync('/bin/bash -c "ifconfig vpn0 || ifconfig tun0"')[1];
     var command_output_string = '';
 
     for (var i = 0; i < command_output_bytes.length; ++i){
