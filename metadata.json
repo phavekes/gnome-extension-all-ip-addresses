@@ -9,9 +9,10 @@
     "40",
     "41",
     "42",
-    "43"
+    "43",
+    "44"
   ], 
   "url": "https://github.com/phavekes/gnome-extension-all-ip-addresses", 
   "uuid": "gnome-extension-all-ip-addresses@havekes.eu", 
-  "version": 11
+  "version": 12
 }
