@@ -135,19 +135,22 @@ class AllIPAddressIndicator extends PanelMenu.Button{
         this._updateLabel();
     }
 
+    _toggleView(){
+      console.log("Updating label for all-ip extension")
+      if (type===4) {
+        type=6;
+      } else if (type===6) {
+        type=0;
+      } else if (type===0){
+        type=1;
+      } else if (type===1){
+        type=4
+      }
+      this._updateLabel();
+    }
+
     _updateLabel(){
-        console.log("Updating label for all-ip extension")
-        if (type===4) {
-          type=6;
-        } else if (type===6) {
-          type=0;
-        } else if (type===0){
-          type=1;
-        } else if (type===1){
-          type=4
-        }
-      
-        const refreshTime = 2 // in seconds
+        const refreshTime = 20 // in seconds
 
         if (this._timeout) {
                 GLib.source_remove(this._timeout);
@@ -187,7 +190,7 @@ export default class AllIPAddressExtension extends Extension {
     enable() {
         this._indicator = new AllIPAddressIndicator();
         Main.panel.addToStatusArea('all-ip-addresses-indicator', this._indicator);
-        this._indicator.connect('button-press-event', this._indicator._updateLabel());
+        this._indicator.connect('button-press-event', () => this._indicator._toggleView());
     }
 
     disable() {
