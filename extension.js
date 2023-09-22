@@ -1,14 +1,12 @@
 'use strict';
 
-const Main = imports.ui.main;
-const Mainloop = imports.mainloop;
-
-const St = imports.gi.St;
-const PanelMenu = imports.ui.panelMenu;
-const Clutter = imports.gi.Clutter;
-const GLib = imports.gi.GLib;
-const ShellToolkit = imports.gi.St;
-const GObject = imports.gi.GObject;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+import St from 'gi://St';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 // Start with WAN address as default
 var type=4;
@@ -119,7 +117,11 @@ function _get_wan_ip4() {
     return wanIpAddress;
 }
 
-var AllIPAddressIndicator = class AllIPAddressIndicator extends PanelMenu.Button{
+class AllIPAddressIndicator extends PanelMenu.Button{
+  
+    static {
+        GObject.registerClass(this);
+    }
 
     _init() {
         // Chaining up to the super-class
@@ -133,14 +135,28 @@ var AllIPAddressIndicator = class AllIPAddressIndicator extends PanelMenu.Button
         this._updateLabel();
     }
 
+    _toggleView(){
+      console.log("Updating label for all-ip extension")
+      if (type===4) {
+        type=6;
+      } else if (type===6) {
+        type=0;
+      } else if (type===0){
+        type=1;
+      } else if (type===1){
+        type=4
+      }
+      this._updateLabel();
+    }
+
     _updateLabel(){
         const refreshTime = 20 // in seconds
 
         if (this._timeout) {
-                Mainloop.source_remove(this._timeout);
+                GLib.source_remove(this._timeout);
                 this._timeout = null;
         }
-        this._timeout = Mainloop.timeout_add_seconds(refreshTime, () => {this._updateLabel();});
+        this._timeout = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, refreshTime, () => {this._updateLabel();});
         // Show the right format. 0 = WAN, 4 = IPv4, 6=IPv6
         if (type===4) {
             this.buttonText.set_text("LAN: "+_get_lan_ip4());
@@ -161,47 +177,25 @@ var AllIPAddressIndicator = class AllIPAddressIndicator extends PanelMenu.Button
 
     stop() {
         if (this._timeout) {
-            Mainloop.source_remove(this._timeout);
+            GLib.source_remove(this._timeout);
         }
         this._timeout = undefined;
 
         this.menu.removeAll();
     }
 }
-// In gnome-shell >= 3.32 this class and several others became GObject
-// subclasses. We can account for this change simply by re-wrapping our
-// subclass in `GObject.registerClass()`
-AllIPAddressIndicator = GObject.registerClass(
-    {GTypeName: 'AllIPAddressIndicator'},
-    AllIPAddressIndicator
-);
 
-let _indicator;
+export default class AllIPAddressExtension extends Extension {
 
-function init() {
-}
-
-function enable() {
-    _indicator = new AllIPAddressIndicator();
-    Main.panel.addToStatusArea('all-ip-addresses-indicator', _indicator);
-    _indicator.connect('button-press-event', _toggle);
-}
-
-function disable() {
-    _indicator.stop();
-    _indicator.destroy();
-    _indicator = null;
-}
-
-function _toggle() {
-    if (type===4) {
-        type=6;
-    } else if (type===6) {
-        type=0;
-    } else if (type===0){
-        type=1;
-    } else if (type===1){
-        type=4
+    enable() {
+        this._indicator = new AllIPAddressIndicator();
+        Main.panel.addToStatusArea('all-ip-addresses-indicator', this._indicator);
+        this._indicator.connect('button-press-event', () => this._indicator._toggleView());
     }
-    _indicator._updateLabel();
+
+    disable() {
+        this._indicator.stop();
+        this._indicator.destroy();
+        this._indicator = null;
+    }
 }

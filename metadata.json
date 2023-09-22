@@ -2,17 +2,9 @@
   "description": "Show IP addresses for LAN, WAN IPv6 and VPN in the GNOME panel. Click on the address to cycle trough different interfaces.", 
   "name": "All IP Addresses", 
   "shell-version": [
-    "3.32",
-    "3.34",
-    "3.36",
-    "3.38",
-    "40",
-    "41",
-    "42",
-    "43",
-    "44"
+    "45"
   ], 
   "url": "https://github.com/phavekes/gnome-extension-all-ip-addresses", 
   "uuid": "gnome-extension-all-ip-addresses@havekes.eu", 
-  "version": 12
+  "version": 13
 }
